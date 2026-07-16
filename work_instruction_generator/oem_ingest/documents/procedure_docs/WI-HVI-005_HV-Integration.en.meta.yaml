@@ -1,0 +1,14 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+doc_id: wi-hvi-005-hv-integration-rev-c
+title: High-Voltage Integration – EV Battery Pack Assembly
+station: HVI-05
+machine_id: zyro-assembly-tooling
+document_type: work_instruction
+standard: IATF 16949:2016 / ISO 10013:2021
+version: Rev C
+language: en
+pages: 11
+classification: controlled

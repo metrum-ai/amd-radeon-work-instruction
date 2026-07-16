@@ -1,0 +1,13 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+doc_id: nexora-ks200-inspection-standard-rev-b
+title: ネクソラ_KS200検査基準書
+vendor: Nexora Corporation
+machine_id: nexora-ks200
+document_type: inspection_standard
+version: Rev B
+language: ja
+pages: 9
+classification: restricted

@@ -1,0 +1,23 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+services:
+  frontend:
+    build:
+      context: .
+    ports:
+      - "5173:8080"
+    restart: unless-stopped
+    volumes:
+      - ../work_instruction_generator/oem_ingest/documents/machine_manuals:/usr/share/nginx/manuals:ro
+      - ../work_instruction_generator/oem_ingest/documents/sop_docs:/usr/share/nginx/sop-docs:ro
+      - ../work_instruction_generator/oem_ingest/documents/procedure_docs:/usr/share/nginx/procedure-docs:ro
+    depends_on:
+      wig-api:
+        condition: service_healthy
+    networks:
+      - wig-net
+
+networks:
+  wig-net:

@@ -1,0 +1,244 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+include:
+  - path: work_instruction_generator/ingest/docker-compose.yml
+  - path: work_instruction_generator/simulator/docker-compose.yml
+  - path: work_instruction_generator/models/docker-compose.yml
+  - path: work_instruction_generator/oem_ingest/docker-compose.yml
+  - path: frontend/docker-compose.yml
+  - path: work_instruction_generator/metrics/docker-compose.yml
+
+services:
+  # ─── Infrastructure ──────────────────────────────────────────────────────────
+
+  postgres:
+    image: postgres:16.4-alpine3.20
+    container_name: wig-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: wig
+      POSTGRES_USER: wig
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    # No published port: Postgres is consumed over the internal network only
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wig"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wig-net
+
+  nats:
+    image: nats:2.10.22-alpine3.20
+    container_name: wig-nats
+    restart: unless-stopped
+    command: ["--http_port", "8222"]
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - wig-net
+
+  agent-instruction-author:
+    build:
+      context: .
+      dockerfile: work_instruction_generator/Dockerfile
+    image: wig-agents:0.1.0
+    container_name: wig-agent-instruction-author
+    command: ["uvicorn", "work_instruction_generator.agent_server:app", "--host", "0.0.0.0", "--port", "8015"]
+    restart: unless-stopped
+    environment:
+      - AGENT_NAME=InstructionAuthorAgent
+      - AGENT_LLM_URL=http://llm-inference:8000
+      - AGENT_TRANSLATE_URL=http://inference:8000
+      - AGENT_LLM_MODEL=language-model
+      - AGENT_TRANSLATE_MODEL=language-model
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8015/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - wig-net
+
+  agent-illustration:
+    image: wig-agents:0.1.0
+    container_name: wig-agent-illustration
+    command: ["uvicorn", "work_instruction_generator.agent_server:app", "--host", "0.0.0.0", "--port", "8016"]
+    restart: unless-stopped
+    environment:
+      - AGENT_NAME=TechnicalIllustrationAgent
+      - WIG_LEMONADE_URL=http://lemonade:13305
+      - WIG_LEMONADE_PEERS=http://lemonade-1:13305,http://lemonade-2:13305
+      - WIG_ARTIFACT_PATH=/data/wig/artifacts
+    volumes:
+      - wig-artifacts:/data/wig/artifacts
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8016/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      # /health stays 503 until Flux is pulled+loaded on every peer. A cold
+      # first pull is a ~30-45min download, so allow that as start-up grace
+      # (container shows "starting", not "unhealthy", until the model is ready).
+      start_period: 3600s
+    networks:
+      - wig-net
+
+  agent-compositor:
+    image: wig-agents:0.1.0
+    container_name: wig-agent-compositor
+    command: ["uvicorn", "work_instruction_generator.agent_server:app", "--host", "0.0.0.0", "--port", "8018"]
+    restart: unless-stopped
+    environment:
+      - AGENT_NAME=CompositorExportAgent
+      - WIG_TEMPLATES_DIR=/app/work_instruction_generator/export/templates
+      - WIG_ARTIFACT_PATH=/data/wig/artifacts
+    volumes:
+      - wig-artifacts:/data/wig/artifacts
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8018/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - wig-net
+
+  wig-mcp-tools:
+    build:
+      context: .
+      dockerfile: work_instruction_generator/Dockerfile
+    image: wig-agents:0.1.0
+    container_name: wig-mcp-tools
+    command: ["python", "-m", "work_instruction_generator.mcp.wig_tools_server"]
+    restart: unless-stopped
+    environment:
+      - WIG_MCP_HOST=0.0.0.0
+      - WIG_MCP_PORT=8020
+      - AGENT_LLM_URL=http://llm-inference:8000
+      - AGENT_TRANSLATE_URL=http://inference:8000
+      - AGENT_LLM_MODEL=language-model
+      - AGENT_TRANSLATE_MODEL=language-model
+      - WIG_LEMONADE_URL=http://lemonade:13305
+      - WIG_LEMONADE_PEERS=http://lemonade-1:13305,http://lemonade-2:13305
+      - WIG_TEMPLATES_DIR=/app/work_instruction_generator/export/templates
+      - WIG_ARTIFACT_PATH=/data/wig/artifacts
+      - PROCEDURE_CONTEXT_URL=http://manufacturing-work-instruction-generator-api-1:8080
+      - SIMULATOR_URL=http://machine-simulator:8000
+      - DATABASE_URL=${DATABASE_URL}
+    volumes:
+      - wig-artifacts:/data/wig/artifacts
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-s", "-o", "/dev/null", "http://localhost:8020/mcp"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - wig-net
+
+  openclaw-gateway:
+    image: ghcr.io/openclaw/openclaw:2026.6.9-slim
+    user: "0:0"
+    security_opt:
+      - "no-new-privileges:true"
+    container_name: wig-openclaw-gateway
+    restart: unless-stopped
+    volumes:
+      - ./work_instruction_generator/openclaw/openclaw.json:/tmp/openclaw-seed.json:ro
+      - ./work_instruction_generator/openclaw/skills:/tmp/openclaw-skills:ro
+      - openclaw-home:/home/node/.openclaw
+    environment:
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
+      - GEMMA_AUTHOR_API_KEY=${GEMMA_AUTHOR_API_KEY}
+      - TRANSLATE_GEMMA_API_KEY=${TRANSLATE_GEMMA_API_KEY}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        chown -R node:node /home/node/.openclaw
+        cp /tmp/openclaw-seed.json /home/node/.openclaw/openclaw.json
+        node -e '
+          const fs = require("fs");
+          const p = "/home/node/.openclaw/openclaw.json";
+          const cfg = JSON.parse(fs.readFileSync(p, "utf8"));
+          cfg.gateway.auth.token = process.env.OPENCLAW_GATEWAY_TOKEN || "";
+          cfg.models.providers["gemma-author"].apiKey = process.env.GEMMA_AUTHOR_API_KEY || "";
+          cfg.models.providers["translate-gemma"].apiKey = process.env.TRANSLATE_GEMMA_API_KEY || "";
+          fs.writeFileSync(p, JSON.stringify(cfg, null, 2));
+        '
+        mkdir -p /home/node/.openclaw/workspace/skills
+        cp -r /tmp/openclaw-skills/. /home/node/.openclaw/workspace/skills/
+        chown -R node:node /home/node/.openclaw
+        exec su -s /bin/sh node -c "node openclaw.mjs gateway --allow-unconfigured"
+    depends_on:
+      wig-mcp-tools:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:18789/v1/models -H \"Authorization: Bearer $${OPENCLAW_GATEWAY_TOKEN}\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - wig-net
+
+  # ─── WIG API ──────────────────────────────────────────────────────────────────
+
+  wig-api:
+    build:
+      context: .
+      dockerfile: work_instruction_generator/Dockerfile
+    container_name: wig-api
+    image: wig-api:0.1.0
+    restart: unless-stopped
+    environment:
+      - WIG_LEMONADE_URL=http://lemonade:13305
+      - WIG_ARTIFACT_PATH=/data/wig/artifacts
+      - AGENT_INSTRUCTION_AUTHOR_URL=http://agent-instruction-author:8015
+      - AGENT_ILLUSTRATION_URL=http://agent-illustration:8016
+      - WIG_USE_OPENCLAW_GATEWAY=${WIG_USE_OPENCLAW_GATEWAY:-true}
+      - WIG_MCP_TOOLS_URL=http://wig-mcp-tools:8020/mcp
+      - DATABASE_URL=${DATABASE_URL}
+      - MILVUS_URL=http://milvus-standalone:19530
+      - SIMULATOR_URL=http://machine-simulator:8000
+      - PROCEDURE_CONTEXT_URL=http://manufacturing-work-instruction-generator-api-1:8080
+    volumes:
+      - wig-artifacts:/data/wig/artifacts
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+      wig-mcp-tools:
+        condition: service_healthy
+      oem-ingest:
+        condition: service_started
+    networks:
+      - wig-net
+
+volumes:
+  wig-artifacts:
+  postgres-data:
+  openclaw-home:
+
+networks:
+  wig-net:
+    driver: bridge

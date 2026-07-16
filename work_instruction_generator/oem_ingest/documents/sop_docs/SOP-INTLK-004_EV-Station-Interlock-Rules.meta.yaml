@@ -1,0 +1,16 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+doc_id: sop-intlk-004-ev-station-interlock-rules-rev-c
+title: EV Station Interlock Rules — EV Battery Assembly
+stations: All
+document_type: sop
+topic: safety / interlocks
+standard: IATF 16949:2016 / ISO 10013:2021
+version: Rev C
+effective_date: '2025-01-15'
+language: en
+pages: 6
+classification: controlled
+source: generated

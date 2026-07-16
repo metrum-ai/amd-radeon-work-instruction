@@ -1,0 +1,212 @@
+/* Copyright Advanced Micro Devices, Inc.
+ *
+ * SPDX-License-Identifier: MIT
+ */
+/* WIG Standard Print CSS */
+
+@page {
+    size: A4;
+    margin: 2.5cm 2cm 3cm 2cm;
+
+    /* @top-left / @top-right running-header content is injected by a templated
+       <style> block in standard.html — this file is static and never run
+       through Jinja, so placeholders here would render literally. */
+
+    @bottom-center {
+        content: "Page " counter(page) " of " counter(pages);
+        font-family: sans-serif;
+        font-size: 9pt;
+        color: #777;
+    }
+}
+
+article.manual {
+    font-family: sans-serif;
+    color: #222;
+    line-height: 1.5;
+}
+
+.manual-header {
+    border-bottom: 2px solid #003366;
+    padding-bottom: 0.5cm;
+    margin-bottom: 1cm;
+}
+
+.manual-header h1 {
+    color: #003366;
+    font-size: 22pt;
+    margin-bottom: 5pt;
+}
+
+.manual-header p {
+    color: #666;
+    font-size: 10pt;
+    margin: 2pt 0;
+}
+
+table.toc {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1cm;
+}
+
+table.toc th, table.toc td {
+    padding: 6pt 8pt;
+    text-align: left;
+    border-bottom: 1px solid #ccc;
+    font-size: 11pt;
+}
+
+table.toc th {
+    background-color: #f4f6f8;
+    color: #003366;
+}
+
+section.step {
+    page-break-inside: avoid;
+    margin-bottom: 1cm;
+    border-left: 4px solid #003366;
+    padding-left: 8pt;
+}
+
+section.step h2 {
+    color: #003366;
+    font-size: 14pt;
+    margin-top: 0;
+}
+
+/* ── Interlock: blocked ───────────────────────────────────── */
+section.step--blocked {
+    border-left: 4px solid #b71c1c;
+    background-color: #fff8f8;
+    padding: 8pt;
+}
+
+section.step--blocked h2 {
+    color: #b71c1c;
+}
+
+.interlock-banner--blocked {
+    background-color: #b71c1c;
+    color: #fff;
+    padding: 6pt 10pt;
+    margin-bottom: 8pt;
+    font-weight: bold;
+    font-size: 10pt;
+    letter-spacing: 0.04em;
+    page-break-inside: avoid;
+}
+
+/* ── Interlock: warning ───────────────────────────────────── */
+section.step--warning {
+    border-left: 4px solid #e65100;
+    background-color: #fff9f0;
+    padding: 8pt;
+}
+
+section.step--warning h2 {
+    color: #bf360c;
+}
+
+.interlock-banner--warning {
+    background-color: #e65100;
+    color: #fff;
+    padding: 5pt 10pt;
+    margin-bottom: 8pt;
+    font-weight: bold;
+    font-size: 10pt;
+    page-break-inside: avoid;
+}
+
+/* ── Document-level blocked summary ──────────────────────── */
+.blocked-summary {
+    border: 2px solid #b71c1c;
+    background-color: #ffebee;
+    padding: 10pt 14pt;
+    margin-bottom: 1cm;
+    page-break-inside: avoid;
+}
+
+.blocked-summary h3 {
+    color: #b71c1c;
+    margin-top: 0;
+    font-size: 12pt;
+}
+
+.blocked-summary ul {
+    margin: 4pt 0 0 0;
+    padding-left: 16pt;
+    font-size: 10pt;
+}
+
+/* ── Safety warning aside ─────────────────────────────────── */
+aside.warning {
+    background-color: #fff5f5;
+    border: 1px solid #d32f2f;
+    padding: 8pt 10pt;
+    margin: 8pt 0;
+    font-weight: bold;
+    color: #b71c1c;
+    page-break-inside: avoid;
+}
+
+/* ── TOC interlock indicators ─────────────────────────────── */
+.toc-badge--blocked {
+    display: inline-block;
+    background-color: #b71c1c;
+    color: #fff;
+    font-size: 7pt;
+    font-weight: bold;
+    padding: 1pt 4pt;
+    border-radius: 2pt;
+    margin-left: 6pt;
+    vertical-align: middle;
+    letter-spacing: 0.05em;
+}
+
+.toc-badge--warning {
+    display: inline-block;
+    background-color: #e65100;
+    color: #fff;
+    font-size: 7pt;
+    font-weight: bold;
+    padding: 1pt 4pt;
+    border-radius: 2pt;
+    margin-left: 6pt;
+    vertical-align: middle;
+}
+
+p.source-note {
+    font-style: italic;
+    color: #555;
+    font-size: 9pt;
+    margin-top: 6pt;
+}
+
+figure {
+    text-align: center;
+    margin: 1cm 0;
+    page-break-inside: avoid;
+}
+
+figure img {
+    max-width: 100%;
+    height: auto;
+}
+
+figcaption {
+    font-size: 9pt;
+    color: #555;
+    margin-top: 4pt;
+}
+
+.source-index {
+    margin-top: 1cm;
+    border-top: 1px solid #ccc;
+    padding-top: 6pt;
+}
+
+.source-index h3 {
+    color: #003366;
+    font-size: 12pt;
+}

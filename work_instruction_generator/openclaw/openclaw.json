@@ -1,0 +1,72 @@
+{
+  "agents": {
+    "defaults": {
+      "workspace": "/home/node/.openclaw/workspace",
+      "skills": [
+        "technical-writing",
+        "step-planning",
+        "translation",
+        "flux-prompt-summarization"
+      ]
+    },
+    "list": [
+      {
+        "id": "wig-author",
+        "default": true
+      }
+    ]
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "gemma-author": {
+        "baseUrl": "http://llm-inference:8000/v1",
+        "apiKey": "",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "language-model",
+            "name": "Gemma authoring model"
+          }
+        ]
+      },
+      "translate-gemma": {
+        "baseUrl": "http://inference:8000/v1",
+        "apiKey": "",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "language-model",
+            "name": "Translation model"
+          }
+        ]
+      }
+    }
+  },
+  "mcp": {
+    "servers": {
+      "wig-tools": {
+        "transport": "streamable-http",
+        "url": "http://wig-mcp-tools:8020/mcp"
+      }
+    }
+  },
+  "gateway": {
+    "port": 18789,
+    "auth": {
+      "mode": "token",
+      "token": ""
+    }
+  },
+  "tools": {
+    "deny": [
+      "exec",
+      "process",
+      "browser",
+      "canvas",
+      "device-pair",
+      "phone-control",
+      "talk-voice"
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+doc_id: sop-loto-001-lockout-tagout-policy-rev-c
+title: Lockout / Tagout Policy — EV Battery Assembly
+stations: All (CEL-01 through EOL-09)
+document_type: sop
+topic: safety / LOTO
+standard: IATF 16949:2016 / ISO 10013:2021
+version: Rev C
+effective_date: '2025-01-15'
+language: en
+pages: 6
+classification: controlled
+source: generated

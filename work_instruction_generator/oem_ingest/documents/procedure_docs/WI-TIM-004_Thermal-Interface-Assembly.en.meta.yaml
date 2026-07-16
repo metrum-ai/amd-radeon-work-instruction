@@ -1,0 +1,14 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+doc_id: wi-tim-004-thermal-interface-assembly-rev-c
+title: Thermal Interface Material Assembly – EV Battery Pack Assembly
+station: TIM-04
+machine_id: veltrix-problu-gantry
+document_type: work_instruction
+standard: IATF 16949:2016 / ISO 10013:2021
+version: Rev C
+language: en
+pages: 13
+classification: controlled

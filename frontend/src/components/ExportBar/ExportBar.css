@@ -1,0 +1,141 @@
+/* Copyright Advanced Micro Devices, Inc.
+ *
+ * SPDX-License-Identifier: MIT
+ */
+.export-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  height: 48px;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border);
+}
+
+.export-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.export-bar-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.export-bar-label {
+  font-family: var(--font-condensed);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-dim);
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.export-bar-select {
+  font-size: var(--fs-xs);
+  padding: 4px 26px 4px 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.export-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.export-bar-export-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: #fff;
+  background: var(--gradient-amd);
+  border: none;
+  border-radius: var(--radius-sm);
+}
+
+.export-bar-export-btn:hover {
+  box-shadow: 0 0 12px rgba(237, 28, 36, 0.25);
+}
+
+.export-bar-publish-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.export-bar-publish-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--border-light);
+}
+
+.export-bar-publish-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--sev-safe);
+  flex-shrink: 0;
+}
+
+.export-bar-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.export-bar-status--draft {
+  color: var(--text-dim);
+  background: rgba(90, 90, 95, 0.12);
+}
+
+.export-bar-status--generating {
+  color: var(--amd-orange);
+  background: var(--sev-high-bg);
+  animation: export-pulse 2s ease-in-out infinite;
+}
+
+@keyframes export-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.export-bar-status--review {
+  color: var(--amd-teal);
+  background: var(--sev-medium-bg);
+}
+
+.export-bar-status--approved {
+  color: var(--sev-safe);
+  background: var(--sev-safe-bg);
+}
+
+.export-bar-status--published {
+  color: var(--sev-safe);
+  background: var(--sev-safe-bg);
+}
+
+.export-bar-status-icon {
+  display: flex;
+  align-items: center;
+}

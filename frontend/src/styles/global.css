@@ -1,0 +1,123 @@
+/* Copyright Advanced Micro Devices, Inc.
+ *
+ * SPDX-License-Identifier: MIT
+ */
+@import './fonts.css';
+@import './variables.css';
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font);
+  font-size: var(--fs-base);
+  color: var(--text-primary);
+  background: var(--bg-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: rgba(237, 28, 36, 0.2);
+  color: var(--text-primary);
+}
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2A2A2F; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #5A5A5F; }
+
+button {
+  font-family: var(--font);
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+input, textarea, select {
+  font-family: var(--font);
+  outline: none;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: var(--fs-sm);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--amd-teal);
+  box-shadow: 0 0 0 2px rgba(0, 124, 151, 0.18);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239D9FA2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+}
+
+.mono {
+  font-family: var(--font-mono) !important;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes livePulse {
+  0%   { box-shadow: 0 0 0 0 rgba(242,101,34,0.5); opacity: 1; }
+  50%  { box-shadow: 0 0 0 5px rgba(242,101,34,0); opacity: 0.6; }
+  100% { box-shadow: 0 0 0 0 rgba(242,101,34,0.5); opacity: 1; }
+}
+
+@keyframes gpu-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 18px rgba(237,28,36,.35))
+            drop-shadow(0 0 6px rgba(242,101,34,.20))
+            drop-shadow(0 8px 24px rgba(0,0,0,.55));
+  }
+  50% {
+    filter: drop-shadow(0 0 28px rgba(237,28,36,.50))
+            drop-shadow(0 0 12px rgba(242,101,34,.35))
+            drop-shadow(0 8px 24px rgba(0,0,0,.55));
+  }
+}
+
+@keyframes glow-line {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}

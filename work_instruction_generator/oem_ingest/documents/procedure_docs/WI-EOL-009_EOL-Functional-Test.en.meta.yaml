@@ -1,0 +1,14 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+doc_id: wi-eol-009-eol-functional-test-rev-c
+title: End-of-Line Functional Test – EV Battery Pack Assembly
+station: EOL-09
+machine_id: nexora-eol-test-system
+document_type: work_instruction
+standard: IATF 16949:2016 / ISO 12405-4
+version: Rev C
+language: en
+pages: 11
+classification: controlled

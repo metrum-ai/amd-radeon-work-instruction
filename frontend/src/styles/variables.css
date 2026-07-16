@@ -1,0 +1,67 @@
+/* Copyright Advanced Micro Devices, Inc.
+ *
+ * SPDX-License-Identifier: MIT
+ */
+:root {
+  --amd-red: #ED1C24;
+  --amd-orange: #F26522;
+  --amd-teal: #007C97;
+
+  --amd-black: #000000;
+  --amd-dark-gray: #27282B;
+  --amd-cool-gray: #636466;
+  --amd-light-gray: #9D9FA2;
+  --amd-white: #FFFFFF;
+
+  --bg-base: #08080A;
+  --bg-surface: #0E0E11;
+  --bg-elevated: #151518;
+  --bg-card: #121215;
+  --bg-hover: #1C1C20;
+  --bg-glass: rgba(14, 14, 17, 0.85);
+
+  --border: #1E1E22;
+  --border-light: #2A2A2F;
+  --border-accent: rgba(237, 28, 36, 0.15);
+
+  --text-primary: #F0F0F0;
+  --text-secondary: #9D9FA2;
+  --text-muted: #8A8B8E;
+  --text-dim: #5A5A5F;
+
+  --sev-critical: #ED1C24;
+  --sev-critical-bg: rgba(237, 28, 36, 0.08);
+  --sev-high: #F26522;
+  --sev-high-bg: rgba(242, 101, 34, 0.08);
+  --sev-medium: #007C97;
+  --sev-medium-bg: rgba(0, 124, 151, 0.08);
+  --sev-safe: #22C55E;
+  --sev-safe-bg: rgba(34, 197, 94, 0.08);
+
+  --font: 'Inter', sans-serif;
+  --font-brand: 'Klavika', 'Inter', sans-serif;
+  --font-condensed: 'Klavika Condensed', 'Klavika', 'Inter', sans-serif;
+  --font-mono: 'Geist Mono Variable', 'Courier New', monospace;
+
+  --fs-xs: 11px;
+  --fs-sm: 14px;
+  --fs-base: 15px;
+  --fs-md: 16px;
+  --fs-lg: 18px;
+  --fs-xl: 23px;
+  --fs-2xl: 37px;
+  --fs-mono-sm: 14px;
+  --fs-mono-lg: 21px;
+
+  --radius: 8px;
+  --radius-sm: 4px;
+  --radius-lg: 12px;
+
+  --shadow: 0 8px 32px rgba(0, 0, 0, .6);
+  --shadow-sm: 0 2px 12px rgba(0, 0, 0, .4);
+  --shadow-glow: 0 0 32px rgba(237, 28, 36, 0.08);
+
+  --gradient-amd: linear-gradient(135deg, #ED1C24, #F26522);
+  --gradient-amd-h: linear-gradient(90deg, #ED1C24, #F26522);
+  --gradient-amd-subtle: linear-gradient(135deg, rgba(237,28,36,0.08), rgba(242,101,34,0.02));
+}

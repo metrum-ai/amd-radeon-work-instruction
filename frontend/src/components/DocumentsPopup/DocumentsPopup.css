@@ -1,0 +1,178 @@
+/* Copyright Advanced Micro Devices, Inc.
+ *
+ * SPDX-License-Identifier: MIT
+ */
+.dp-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+}
+
+.dp {
+  position: fixed;
+  top: 52px;
+  right: 20px;
+  width: 440px;
+  max-height: 480px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+  animation: dpDrop 0.15s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes dpDrop {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dp__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.dp__title {
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.dp__count {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  padding: 1px 7px;
+}
+
+.dp__list {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.dp__list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.dp__list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.dp-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  cursor: pointer;
+  transition: background 0.12s;
+  border-bottom: 1px solid var(--border);
+}
+
+.dp-item:last-child {
+  border-bottom: none;
+}
+
+.dp-item:hover {
+  background: var(--bg-hover);
+}
+
+.dp-item--skeleton {
+  height: 56px;
+  cursor: default;
+  background: linear-gradient(90deg, var(--bg-elevated) 25%, var(--bg-hover) 50%, var(--bg-elevated) 75%);
+  background-size: 200% 100%;
+  animation: dp-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes dp-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.dp-empty {
+  padding: 28px 14px;
+  font-size: 11px;
+  color: var(--text-dim);
+  text-align: center;
+  letter-spacing: 0.06em;
+}
+
+.dp-item__left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.dp-item__file-icon {
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.3);
+  margin-top: 2px;
+}
+
+.dp-item__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.dp-item__title {
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dp-item__meta {
+  font-family: var(--font);
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.35);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.dp-item__cat {
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+}
+
+.dp-item__dot {
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.dp-item__icon {
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.15);
+  transition: color 0.12s;
+}
+
+.dp-item:hover .dp-item__icon {
+  color: rgba(255, 255, 255, 0.6);
+}

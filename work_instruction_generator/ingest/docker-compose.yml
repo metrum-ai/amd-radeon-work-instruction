@@ -1,0 +1,112 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+services:
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.5
+    command: >
+      etcd
+      --advertise-client-urls=http://etcd:2379
+      --listen-client-urls=http://0.0.0.0:2379
+      --data-dir=/etcd
+    volumes:
+      - etcd-data:/etcd
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+    networks:
+      - wig-net
+
+  rustfs:
+    image: rustfs/rustfs:1.0.0-beta.3
+    environment:
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+      RUSTFS_ADDRESS: 0.0.0.0:9000
+      RUSTFS_CONSOLE_ENABLE: "false"
+      RUSTFS_REGION: us-east-1
+      RUSTFS_VOLUMES: /data
+    volumes:
+      - rustfs-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - wig-net
+
+  milvus-standalone:
+    image: milvusdb/milvus:v2.4.6
+    command: ["milvus", "run", "standalone"]
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: rustfs:9000
+      MINIO_ACCESS_KEY_ID: ${RUSTFS_ACCESS_KEY}
+      MINIO_SECRET_ACCESS_KEY: ${RUSTFS_SECRET_KEY}
+      MINIO_REGION: us-east-1
+      MINIO_USE_SSL: "false"
+    depends_on:
+      etcd:
+        condition: service_healthy
+      rustfs:
+        condition: service_healthy
+    volumes:
+      - milvus-data:/var/lib/milvus
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+    networks:
+      - wig-net
+
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    command: mosquitto -c /mosquitto/config/mosquitto.conf
+    volumes:
+      - ../simulator/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    networks:
+      - wig-net
+
+  api:
+    build:
+      context: .
+    environment:
+      TRANSLATION_PROVIDER: llm
+      LLM_TRANSLATION_BASE_URL: http://inference:8000/v1
+      LLM_TRANSLATION_MODEL: language-model
+      LLM_TRANSLATION_API_KEY: ${INFERENCE_API_KEY}
+      TRANSLATION_WORKERS: "4"
+      EMBEDDING_PROVIDER: sentence_transformers
+      MILVUS_HOST: milvus-standalone
+      MILVUS_PORT: 19530
+      MILVUS_COLLECTION: machine_manual_chunks
+      MQTT_HOST: mosquitto
+      MQTT_PORT: "1883"
+    depends_on:
+      milvus-standalone:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 120s
+    networks:
+      - wig-net
+
+volumes:
+  etcd-data:
+  rustfs-data:
+  milvus-data:
+
+networks:
+  wig-net:

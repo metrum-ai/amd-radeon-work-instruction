@@ -1,0 +1,13 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+doc_id: veltrix-problu-gantry-routing-spec-rev-d
+title: Veltrix_Routing_Specification
+vendor: Veltrix Corporation
+machine_id: veltrix-problu-gantry
+document_type: routing_specification
+version: Rev D
+language: en
+pages: 10
+classification: restricted

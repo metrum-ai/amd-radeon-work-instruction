@@ -1,0 +1,18 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+work_instruction_generator/models/
+work_instruction_generator/oem_ingest/
+work_instruction_generator/simulator/
+work_instruction_generator/tests/
+frontend/
+reports/
+plans/
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+**/.venv/
+**/venv/
+*.md
+.git/

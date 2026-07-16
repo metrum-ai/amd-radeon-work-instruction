@@ -1,0 +1,16 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+doc_id: sop-trbl-008-troubleshooting-trees-rev-c
+title: Troubleshooting Trees — EV Battery Assembly Stations
+stations: All
+document_type: sop
+topic: troubleshooting / fault diagnosis
+standard: IATF 16949:2016 / ISO 10013:2021
+version: Rev C
+effective_date: '2025-01-15'
+language: en
+pages: 5
+classification: controlled
+source: generated

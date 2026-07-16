@@ -1,0 +1,14 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+doc_id: wi-hpt-008-hipot-testing-rev-c
+title: Hi-Pot Dielectric Withstand Testing – EV Battery Pack Assembly
+station: HPT-08
+machine_id: nexora-hipot-tester
+document_type: work_instruction
+standard: IATF 16949:2016 / IEC 60664-1
+version: Rev C
+language: en
+pages: 11
+classification: controlled

@@ -1,0 +1,16 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+doc_id: sop-tribal-009-approved-workarounds-rev-c
+title: Approved Operational Workarounds and Tribal Knowledge — EV Battery Assembly
+stations: All
+document_type: sop
+topic: tribal knowledge / workarounds
+standard: IATF 16949:2016 / ISO 10013:2021
+version: Rev C
+effective_date: '2025-01-15'
+language: en
+pages: 5
+classification: controlled
+source: generated

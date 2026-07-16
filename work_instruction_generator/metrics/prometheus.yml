@@ -1,0 +1,39 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+
+  - job_name: "amd-device-metrics"
+    static_configs:
+      - targets: ["amd-device-metrics-exporter:5000"]
+
+  - job_name: "node"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "vllm-gemma"
+    static_configs:
+      - targets: ["llm-inference-1:8000", "llm-inference-2:8000"]
+
+  # Qwen3.5-9B — translation model and the VLM used for callout/arrow region
+  # matching in generation/illustration_generator.py's _vlm_match_regions().
+  - job_name: "vllm-qwen-vlm"
+    static_configs:
+      - targets: ["inference:8000"]
+
+  # Flux-2-Klein-4B instances (illustration generation). Lemonade exposes
+  # native Prometheus metrics at /metrics (lemonade_model_tokens_per_second,
+  # lemonade_model_requests_total, lemonade_gpu_usage_percent, etc.) — no
+  # exporter needed.
+  - job_name: "lemonade"
+    static_configs:
+      - targets: ["lemonade-1:13305", "lemonade-2:13305"]

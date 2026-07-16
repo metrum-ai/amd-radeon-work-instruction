@@ -1,0 +1,14 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+doc_id: wi-elj-003-electrical-joining-laser-welding-rev-c
+title: Electrical Joining – Laser Welding – EV Battery Pack Assembly
+station: ELJ-03
+machine_id: zyro-kr20-r1810
+document_type: work_instruction
+standard: IATF 16949:2016 / ISO 10013:2021
+version: Rev C
+language: en
+pages: 13
+classification: controlled

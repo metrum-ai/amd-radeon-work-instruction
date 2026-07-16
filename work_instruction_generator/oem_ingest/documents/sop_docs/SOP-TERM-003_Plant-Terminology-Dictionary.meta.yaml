@@ -1,0 +1,16 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+doc_id: sop-term-003-plant-terminology-dictionary-rev-c
+title: Plant Terminology Dictionary — EV Battery Assembly
+stations: All
+document_type: sop
+topic: terminology / RAG
+standard: IATF 16949:2016 / ISO 10013:2021
+version: Rev C
+effective_date: '2025-01-15'
+language: en
+pages: 5
+classification: controlled
+source: generated

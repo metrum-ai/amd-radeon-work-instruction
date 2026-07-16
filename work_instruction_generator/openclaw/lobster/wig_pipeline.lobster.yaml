@@ -1,0 +1,76 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+#
+
+
+lobster:
+  name: wig_instruction_pipeline
+  description: |
+    WIG instruction pipeline: fetch context -> evaluate interlocks -> plan and
+    author steps -> generate illustrations -> compile and export.
+
+  steps:
+    - id: fetch_context
+      tool: wig-tools__fetch_procedure_context
+      input:
+        procedure_id: "$.input.procedure_id"
+        top_k: 5
+      output_as: procedure_context
+
+    - id: fetch_machine_state
+      tool: wig-tools__fetch_machine_state
+      input:
+        station_id: "$.input.station_id"
+      output_as: machine_state
+
+    - id: evaluate_interlock
+      tool: wig-tools__evaluate_interlock
+      input:
+        station_id: "$.input.station_id"
+        machine_state: "$.fetch_machine_state"
+      output_as: interlock_result
+
+    - id: plan_steps
+      skill: step-planning
+      input:
+        source_evidence: "$.input.source_evidence"
+        sop_context: "$.procedure_context"
+        blocked_prereqs: "$.evaluate_interlock.required_actions"
+      output_as: step_plan
+
+    # Per-step authoring: driven externally by api/routes/generation.py in
+    # phase 1 (see note above), documented here as the target shape.
+    - id: author_steps
+      skill: technical-writing
+      input:
+        step_description: "$.plan_steps[*].desc"
+        source_evidence: "$.input.source_evidence"
+        sop_context: "$.procedure_context"
+        machine_state: "$.fetch_machine_state"
+        interlock_result: "$.evaluate_interlock"
+        target_language: "$.input.target_language"
+        target_audience: "$.input.target_audience"
+      output_as: steps
+
+    - id: generate_illustrations
+      skill: flux-prompt-summarization
+      input:
+        document_id: "$.input.document_id"
+        steps: "$.author_steps"
+      output_as: illustrations
+
+    - id: export_and_publish
+      tool: wig-tools__compile_export
+      input:
+        document: "$.input.document"
+        steps: "$.author_steps"
+        illustrations: "$.generate_illustrations"
+        export_format: "$.input.export_format"
+      output_as: export_record
+
+  retry_policy:
+    max_retries: 2
+    backoff_seconds: 5
+
+  timeout_seconds: 300

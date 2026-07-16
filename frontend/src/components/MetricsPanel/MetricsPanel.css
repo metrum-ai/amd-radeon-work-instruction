@@ -1,0 +1,512 @@
+/* Copyright Advanced Micro Devices, Inc.
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+.metrics-panel {
+  width: 290px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: width 0.2s ease;
+  will-change: width;
+  contain: layout style;
+}
+
+.metrics-panel--collapsed {
+  width: 36px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.metrics-panel--collapsed:hover { background: var(--bg-card); }
+
+.metrics-panel__collapsed-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 100%;
+}
+
+.metrics-panel__collapsed-label {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 14px;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+}
+
+.metrics-panel__collapsed-chevron {
+  font-size: 16px;
+  color: var(--text-dim);
+  margin-top: 12px;
+}
+
+.metrics-panel__header {
+  padding: 8px 14px;
+  display: flex;
+  justify-content: flex-end;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--bg-surface);
+}
+
+.metrics-panel__close-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: var(--bg-elevated);
+  font-size: 12px;
+  color: var(--text-dim);
+  transition: background 0.15s ease;
+}
+
+.metrics-panel__close-btn:hover { background: var(--border); }
+
+/* ── Hero showcase ── */
+.metrics-hero-showcase {
+  position: relative;
+  flex-shrink: 0;
+  background: linear-gradient(168deg, #0c0c10 0%, #111118 50%, #0a0a0e 100%);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.metrics-hero-showcase::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 130% 90% at 60% 10%, rgba(237,28,36,.22) 0%, transparent 55%),
+    radial-gradient(ellipse 90%  70% at 85% 55%, rgba(242,101,34,.14) 0%, transparent 50%),
+    radial-gradient(ellipse 80%  50% at 20% 90%, rgba(0,124,151,.10)  0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.metrics-hero-img {
+  position: relative;
+  padding: 20px 24px 0;
+  display: flex;
+  justify-content: center;
+  z-index: 1;
+}
+
+.metrics-hero-img img {
+  display: block;
+  width: 85%;
+  height: auto;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 0 18px rgba(237,28,36,.35))
+    drop-shadow(0 0 6px rgba(242,101,34,.20))
+    drop-shadow(0 8px 24px rgba(0,0,0,.55));
+  animation: gpu-pulse 3s ease-in-out infinite;
+}
+
+@keyframes gpu-pulse {
+  0%,100% {
+    filter:
+      drop-shadow(0 0 18px rgba(237,28,36,.35))
+      drop-shadow(0 0 6px rgba(242,101,34,.20))
+      drop-shadow(0 8px 24px rgba(0,0,0,.55));
+  }
+  50% {
+    filter:
+      drop-shadow(0 0 28px rgba(237,28,36,.50))
+      drop-shadow(0 0 12px rgba(242,101,34,.35))
+      drop-shadow(0 8px 24px rgba(0,0,0,.55));
+  }
+}
+
+.metrics-hero-identity {
+  position: relative;
+  z-index: 1;
+  padding: 12px 16px 16px;
+  text-align: center;
+}
+
+.metrics-hero-name {
+  font-family: var(--font-brand);
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: .01em;
+  margin: 0;
+  line-height: 1.1;
+}
+
+/* ── Spec strip ── */
+.spec-strip {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  padding: 0 16px 16px;
+}
+
+.spec-pill {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.spec-pill__val {
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.spec-pill__key {
+  font-family: var(--font);
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-dim);
+  line-height: 1;
+}
+
+/* ── GPU workload rows ── */
+.gpu-workload-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 14px 0;
+  flex-shrink: 0;
+}
+
+.gpu-workload-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.gpu-workload-row {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.gpu-workload-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--gradient-amd-h);
+}
+
+.gpu-workload-row__title {
+  font-family: var(--font-condensed);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.gpu-workload-row__model {
+  font-family: var(--font);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.gpu-workload-row__metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: auto;
+}
+
+.gpu-workload-row__metric-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.gpu-workload-row__metric-value {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.gpu-workload-row__metric-unit {
+  font-family: var(--font);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+
+.gpu-workload-row__peak-tag {
+  font-family: var(--font-condensed);
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--amd-orange);
+}
+
+.gpu-workload-row__peak-tag--live {
+  color: var(--text-dim);
+}
+
+/* ── Solution stat cards (legacy) ── */
+.metrics-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 10px 14px;
+  flex-shrink: 0;
+}
+
+.metrics-stat-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.metrics-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--gradient-amd-h);
+}
+
+.metrics-stat-label {
+  font-family: var(--font-condensed);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.metrics-stat-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.metrics-stat-value {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.metrics-stat-unit {
+  font-family: var(--font);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+/* ── Charts area ── */
+.metrics-graphs {
+  padding: 12px 14px;
+  flex: 1;
+}
+
+.metrics-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+
+.metrics-section-heading:first-child {
+  border-top: none;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.metrics-section-heading::before {
+  content: '';
+  display: block;
+  width: 3px;
+  height: 13px;
+  border-radius: 2px;
+  background: var(--gradient-amd, linear-gradient(180deg, #ED1C24 0%, #F26522 100%));
+  flex-shrink: 0;
+}
+
+/* ── Offline banner ── */
+.metrics-offline-banner {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.metrics-offline-banner__title {
+  display: block;
+  font-size: 10px;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+.metrics-offline-banner__sub {
+  display: block;
+  font-size: 9px;
+  color: var(--text-dim);
+  margin-top: 2px;
+  opacity: 0.6;
+}
+
+/* ── Footer ── */
+.metrics-panel__footer {
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  justify-content: center;
+}
+
+.metrics-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--text-dim);
+}
+
+.metrics-live-dot--on {
+  background: var(--amd-orange);
+  animation: livePulse 1.6s ease-in-out infinite;
+}
+
+.metrics-live-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.metrics-live-label--on { color: var(--amd-orange); }
+
+@keyframes livePulse {
+  0%   { box-shadow: 0 0 0 0   rgba(242,101,34,.5); opacity: 1; }
+  50%  { box-shadow: 0 0 0 5px rgba(242,101,34,0);  opacity: 0.6; }
+  100% { box-shadow: 0 0 0 0   rgba(242,101,34,.5); opacity: 1; }
+}
+
+/* ── MetricGraph component ── */
+.metric-graph { margin-bottom: 16px; }
+
+.metric-graph__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.metric-graph__label {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.metric-graph__val {
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: baseline;
+  font-family: var(--font-mono);
+}
+
+.metric-graph__unit {
+  font-size: 9px;
+  color: var(--text-dim);
+  font-weight: 400;
+  margin-left: 1px;
+}
+
+.metric-graph__val-empty {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.metric-graph__card {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  padding: 6px 6px 2px 2px;
+}
+
+.metric-graph__chart {
+  width: 100%;
+  height: 80px;
+}
+
+.metric-graph__legend {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.metric-graph__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.metric-graph__legend-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+}
+
+.metric-graph__legend-text {
+  font-size: 8px;
+  color: var(--text-secondary);
+}

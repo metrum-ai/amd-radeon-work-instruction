@@ -1,0 +1,1 @@
+work_instruction_generator/oem_ingest/documents/**/*.pdf filter=lfs diff=lfs merge=lfs -text

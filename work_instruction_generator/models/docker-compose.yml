@@ -1,0 +1,230 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+services:
+  model-downloader:
+    image: python:3.12.10-slim-bookworm
+    command: ["/bin/sh", "/scripts/download.sh"]
+    volumes:
+      - ${HF_CACHE_DIR:-${HOME}/.cache/huggingface}:/root/.cache/huggingface
+      - ./download.sh:/scripts/download.sh:ro
+    networks:
+      - wig-net
+
+  # GPU 0 (renderD129, PCI 0000:03:00.0) — Qwen3.5-9B (VLM / translation)
+  inference:
+    image: vllm/vllm-openai-rocm:v0.24.0
+    command:
+      - --model
+      - Qwen/Qwen3.5-9B
+      - --served-model-name
+      - language-model
+      - --max-model-len
+      - "16384"
+      - --gpu-memory-utilization
+      - "0.85"
+      - --reasoning-parser
+      - qwen3
+      - --enforce-eager
+    environment:
+      HF_HOME: /root/.cache/huggingface
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri/${GPU_INFERENCE_DEVICE:-renderD129}:/dev/dri/${GPU_INFERENCE_DEVICE:-renderD129}
+    group_add:
+      - "44"   # video
+      - "992"  # render
+    volumes:
+      - ${HF_CACHE_DIR:-${HOME}/.cache/huggingface}:/root/.cache/huggingface
+      - ./models/vllm-cache:/root/.cache/vllm
+    depends_on:
+      model-downloader:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+      start_period: 1200s
+    networks:
+      - wig-net
+
+  # GPU 1 (renderD130, PCI 0000:43:00.0) — Gemma-4-E2B-it instance 1 (instruction generation)
+  llm-inference-1:
+    image: vllm/vllm-openai-rocm:v0.24.0
+    command:
+      - --model
+      - google/gemma-4-E2B-it
+      - --served-model-name
+      - language-model
+      - --max-model-len
+      - "16384"
+      - --gpu-memory-utilization
+      - "0.40"
+      - --enforce-eager
+    environment:
+      HF_HOME: /root/.cache/huggingface
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri/${GPU_GEMMA_DEVICE:-renderD130}:/dev/dri/${GPU_GEMMA_DEVICE:-renderD130}
+    group_add:
+      - "44"   # video
+      - "992"  # render
+    volumes:
+      - ${HF_CACHE_DIR:-${HOME}/.cache/huggingface}:/root/.cache/huggingface
+      - ./models/vllm-cache:/root/.cache/vllm
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+      start_period: 1200s
+    networks:
+      - wig-net
+
+  # GPU 1 (renderD130, PCI 0000:43:00.0) — Gemma-4-E2B-it instance 2 (second LLM worker)
+  # Shares renderD130 with llm-inference-1. Original OOM was a simultaneous-startup race;
+  # with depends_on: service_healthy, instance 1 is stable at ~13.5 GB before instance 2 starts.
+  # Reduced utilization to 0.35 (11.2 GB KV cache target) — fits within 18.4 GB free.
+  llm-inference-2:
+    image: vllm/vllm-openai-rocm:v0.24.0
+    command:
+      - --model
+      - google/gemma-4-E2B-it
+      - --served-model-name
+      - language-model
+      - --max-model-len
+      - "16384"
+      - --gpu-memory-utilization
+      - "0.40"
+      - --enforce-eager
+    environment:
+      HF_HOME: /root/.cache/huggingface
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri/${GPU_GEMMA_DEVICE:-renderD130}:/dev/dri/${GPU_GEMMA_DEVICE:-renderD130}
+    group_add:
+      - "44"   # video
+      - "992"  # render
+    volumes:
+      - ${HF_CACHE_DIR:-${HOME}/.cache/huggingface}:/root/.cache/huggingface
+      - ./models/vllm-cache:/root/.cache/vllm
+    depends_on:
+      llm-inference-1:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+      start_period: 1200s
+    networks:
+      - wig-net
+
+  # GPU 2 (renderD128, PCI 0000:a3:00.0) — Flux-2-Klein-4B instance 1 (illustration generation)
+  lemonade-1:
+    image: ghcr.io/lemonade-sdk/lemonade-server:v10.8.0
+    container_name: wig-lemonade-1
+    restart: unless-stopped
+    volumes:
+      - ${HF_CACHE_DIR:-${HOME}/.cache/huggingface}:/root/.cache/huggingface
+      - ${LEMONADE_LLAMA_DIR:-${HOME}/.cache/lemonade/llama}:/opt/lemonade/llama
+      - ${LEMONADE_RECIPE_DIR:-${HOME}/.cache/lemonade/recipe}:/root/.cache/lemonade
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri/${GPU_LEMONADE1_DEVICE:-renderD128}:/dev/dri/${GPU_LEMONADE1_DEVICE:-renderD128}
+    group_add:
+      - video
+    environment:
+      - HSA_OVERRIDE_GFX_VERSION=12.0.0
+    healthcheck:
+      # Not healthy just because the server answers — only once Flux-2-Klein-4B
+      # is actually downloaded on this instance.
+      test:
+        - CMD
+        - python3
+        - -c
+        - "import json,urllib.request,sys; d=json.load(urllib.request.urlopen('http://localhost:13305/api/v1/models')); sys.exit(0 if any(m['id']=='Flux-2-Klein-4B' and m.get('downloaded') for m in d['data']) else 1)"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 3600s
+    networks:
+      - wig-net
+
+  # GPU 3 — Flux-2-Klein-4B instance 2 (illustration generation)
+  lemonade-2:
+    image: ghcr.io/lemonade-sdk/lemonade-server:v10.8.0
+    container_name: wig-lemonade-2
+    restart: unless-stopped
+    volumes:
+      - ${HF_CACHE_DIR:-${HOME}/.cache/huggingface}:/root/.cache/huggingface
+      - ${LEMONADE_LLAMA_DIR:-${HOME}/.cache/lemonade/llama}:/opt/lemonade/llama
+      - ${LEMONADE_RECIPE_DIR:-${HOME}/.cache/lemonade/recipe}:/root/.cache/lemonade
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri/${GPU_LEMONADE2_DEVICE:-renderD131}:/dev/dri/${GPU_LEMONADE2_DEVICE:-renderD131}
+    group_add:
+      - video
+    environment:
+      - HSA_OVERRIDE_GFX_VERSION=12.0.0
+    healthcheck:
+      # Not healthy just because the server answers — only once Flux-2-Klein-4B
+      # is actually downloaded on this instance.
+      test:
+        - CMD
+        - python3
+        - -c
+        - "import json,urllib.request,sys; d=json.load(urllib.request.urlopen('http://localhost:13305/api/v1/models')); sys.exit(0 if any(m['id']=='Flux-2-Klein-4B' and m.get('downloaded') for m in d['data']) else 1)"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 3600s
+    networks:
+      - wig-net
+
+  # Image generation LB: port 13305 → lemonade-1/2 (Flux via Lemonade SDK)
+  lemonade:
+    image: nginx:1.27-alpine
+    container_name: wig-lemonade-lb
+    restart: unless-stopped
+    volumes:
+      - ../config/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      lemonade-1:
+        condition: service_healthy
+      lemonade-2:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:13305/v1/models"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 1800s
+    networks:
+      - wig-net
+
+  # LLM text inference LB: port 8000 → llm-inference-1/2 (Gemma-4-E2B-it via vLLM)
+  llm-inference:
+    image: nginx:1.27-alpine
+    container_name: wig-llm-inference-lb
+    restart: unless-stopped
+    volumes:
+      - ../config/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      llm-inference-1:
+        condition: service_started
+      llm-inference-2:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 1800s
+    networks:
+      - wig-net
+
+networks:
+  wig-net:

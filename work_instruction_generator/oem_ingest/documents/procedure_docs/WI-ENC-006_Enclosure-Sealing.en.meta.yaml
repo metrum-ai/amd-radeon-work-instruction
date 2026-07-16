@@ -1,0 +1,14 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+doc_id: wi-enc-006-enclosure-sealing-rev-c
+title: Enclosure Sealing – EV Battery Pack Assembly
+station: ENC-06
+machine_id: veltrix-problu-gantry
+document_type: work_instruction
+standard: IATF 16949:2016 / ISO 10013:2021
+version: Rev C
+language: en
+pages: 12
+classification: controlled

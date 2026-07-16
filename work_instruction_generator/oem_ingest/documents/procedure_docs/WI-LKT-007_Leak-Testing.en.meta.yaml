@@ -1,0 +1,14 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+doc_id: wi-lkt-007-leak-testing-rev-c
+title: Leak Testing (IP67) – EV Battery Pack Assembly
+station: LKT-07
+machine_id: nexora-leak-test-system
+document_type: work_instruction
+standard: IATF 16949:2016 / IEC 60529
+version: Rev C
+language: en
+pages: 11
+classification: controlled

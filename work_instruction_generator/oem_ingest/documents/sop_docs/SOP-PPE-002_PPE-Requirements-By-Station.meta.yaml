@@ -1,0 +1,16 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+doc_id: sop-ppe-002-ppe-requirements-by-station-rev-c
+title: PPE Requirements by Station — EV Battery Assembly
+stations: All
+document_type: sop
+topic: safety / PPE
+standard: IATF 16949:2016 / ISO 10013:2021
+version: Rev C
+effective_date: '2025-01-15'
+language: en
+pages: 4
+classification: controlled
+source: generated

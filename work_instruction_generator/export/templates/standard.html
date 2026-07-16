@@ -1,0 +1,149 @@
+<!--
+Copyright Advanced Micro Devices, Inc.
+
+SPDX-License-Identifier: MIT
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }} — Rev {{ revision }}</title>
+    {#- print.css inlined (from trusted template dir) so the HTML export is
+        self-contained — a relative <link> can't resolve when the file is opened
+        standalone. WeasyPrint honors the inline styles for the PDF path too. -#}
+    <style>{{ inline_css | safe }}</style>
+    {#- Running-header values are pre-sanitized in Python (running_header_safe
+        strips <>"'\ and newlines), so no <style>/CSS-string breakout is possible
+        and they inject as plain text without |safe. -#}
+    <style>
+      @page {
+        @top-left {
+          content: "{{ header_title }}";
+          font-family: sans-serif; font-size: 10pt; color: #555;
+        }
+        @top-right {
+          content: "Rev {{ revision }} | {{ header_asset_id }}";
+          font-family: sans-serif; font-size: 10pt; color: #555;
+        }
+      }
+    </style>
+</head>
+<body>
+    <article class="manual">
+        <header class="manual-header">
+            <h1>{{ title }}</h1>
+            <p>Asset {{ asset_id }} | Procedure {{ procedure_id }} | Revision {{ revision }}</p>
+        </header>
+
+        {%- set blocked_steps = steps | selectattr("interlock_status", "equalto", "blocked") | list %}
+        {%- if blocked_steps %}
+        <div class="blocked-summary">
+            <h3>&#9888; INTERLOCK BLOCKED — Operator Action Required</h3>
+            <p style="font-size:10pt;margin:0 0 6pt 0;">The following steps cannot proceed until interlock conditions are resolved:</p>
+            <ul>
+                {% for s in blocked_steps %}
+                <li><strong>Step {{ s.step_number }}:</strong> {{ s.title }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if toc_items %}
+        <section class="toc-section">
+            <h2 style="color:#003366;font-size:14pt;">Table of Contents</h2>
+            <table class="toc">
+                <thead>
+                    <tr>
+                        <th style="width:15%;">Step #</th>
+                        <th>Title</th>
+                        <th style="width:15%;text-align:center;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in toc_items %}
+                    <tr>
+                        <td>{{ item.number }}</td>
+                        <td>{{ item.title }}
+                            {% if item.interlock_status == "blocked" %}
+                            <span class="toc-badge--blocked">BLOCKED</span>
+                            {% elif item.interlock_status == "warning" %}
+                            <span class="toc-badge--warning">WARNING</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align:center;">
+                            {% if item.interlock_status == "blocked" %}
+                            <span style="color:#b71c1c;font-weight:bold;">&#9940; Blocked</span>
+                            {% elif item.interlock_status == "warning" %}
+                            <span style="color:#e65100;font-weight:bold;">&#9888; Warning</span>
+                            {% else %}
+                            <span style="color:#2e7d32;">&#10003; Clear</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        {% endif %}
+
+        {% for step in steps %}
+        {%- set is_blocked = step.interlock_status == "blocked" %}
+        {%- set is_warning = step.interlock_status == "warning" %}
+        <section class="step{% if is_blocked %} step--blocked{% elif is_warning %} step--warning{% endif %}">
+
+            {% if is_blocked %}
+            <div class="interlock-banner--blocked">&#9940; INTERLOCK BLOCKED — DO NOT PROCEED WITH THIS STEP</div>
+            {% elif is_warning %}
+            <div class="interlock-banner--warning">&#9888; INTERLOCK WARNING — Verify conditions before proceeding</div>
+            {% endif %}
+
+            <h2>Step {{ step.step_number }}: {{ step.title }}</h2>
+
+            {% if step.safety_warnings %}
+            <aside class="warning">
+                &#9888; SAFETY WARNING: {{ step.safety_warnings | join(" | ") }}
+            </aside>
+            {% endif %}
+
+            <p>{{ step.instruction_text }}</p>
+
+            {% if step.illustration_url %}
+            <figure>
+                <img src="{{ step.illustration_url }}" alt="{{ step.title }}">
+                <figcaption>{{ step.title }}</figcaption>
+            </figure>
+            {% endif %}
+
+            {% if step.tools_required %}
+            <p><strong>Tools Required:</strong> {{ step.tools_required | join(", ") }}</p>
+            {% endif %}
+
+            {% if step.parts_required %}
+            <p><strong>Parts Required:</strong> {{ step.parts_required | join(", ") }}</p>
+            {% endif %}
+
+            {% if step.quality_checks %}
+            <p><strong>Quality Checks:</strong> {{ step.quality_checks | join("; ") }}</p>
+            {% endif %}
+
+            {% if step.source_citations %}
+            <p class="source-note">Sources: {{ step.source_citations | join(", ") }}</p>
+            {% endif %}
+
+        </section>
+        {% endfor %}
+
+        {% if source_citations %}
+        <section class="source-index">
+            <h3>Source Citations Index</h3>
+            <ul>
+                {% for citation in source_citations %}
+                <li>{{ citation }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+
+    </article>
+</body>
+</html>

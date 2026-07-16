@@ -1,0 +1,49 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+styles:
+  - id: "technical_diagram"
+    name: "Technical Diagram"
+    description: "Clean engineering drawing style for general step illustrations"
+    prompt_prefix: "Technical line art diagram, clean lines, engineering drawing style, white background, black thin lines"
+    negative_prompt: "photograph, realistic, shading, color, grainy, low-quality, blurry"
+    controlnet_strength: 0.8
+    width: 768
+    height: 512
+
+  - id: "exploded_view"
+    name: "Exploded View"
+    description: "Exploded assembly view showing separated components"
+    prompt_prefix: "Exploded view technical illustration, separated components, assembly diagram, clean line art, white background, exploded perspective"
+    negative_prompt: "assembled, realistic, photograph, shading, color, cluttered"
+    controlnet_strength: 0.9
+    width: 768
+    height: 512
+
+  - id: "callout"
+    name: "Callout Diagram"
+    description: "Technical diagram with clean leader lines for post-composited callouts"
+    prompt_prefix: "Technical diagram, clean leader lines pointing to component features, white background, black thin lines, no text, no numbers"
+    negative_prompt: "cluttered, realistic, photograph, shading, color, text, numbers, labels, annotations, writing"
+    controlnet_strength: 0.7
+    width: 768
+    height: 512
+
+  - id: "cutaway"
+    name: "Cutaway View"
+    description: "Cross-sectional or cutaway view showing internal structure"
+    prompt_prefix: "Cutaway technical illustration, cross-section view, internal structure exposed, engineering drawing style, white background, thin black lines, no text, no numbers"
+    negative_prompt: "photograph, realistic, shading, color, fully assembled exterior view, text, numbers, labels, writing"
+    controlnet_strength: 0.85
+    width: 768
+    height: 512
+
+  - id: "assembly_sequence"
+    name: "Assembly Sequence"
+    description: "Step-by-step visual showing component placement sequence"
+    prompt_prefix: "Assembly sequence diagram, technical line art, components shown in placement order, clean engineering drawing, white background, no text, no numbers"
+    negative_prompt: "photograph, realistic, shading, color, single step only, cluttered, text, numbers, labels, writing"
+    controlnet_strength: 0.75
+    width: 768
+    height: 512

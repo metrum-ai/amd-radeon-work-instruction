@@ -1,0 +1,36 @@
+# Copyright Advanced Micro Devices, Inc.
+#
+# SPDX-License-Identifier: MIT
+
+services:
+  oem-ingest:
+    build:
+      context: .
+    environment:
+      ANALYZE_IMAGES: "true"
+      BACKEND_URL: http://api:8080
+      CHUNK_OVERLAP_WORDS: "30"
+      CHUNK_WORDS: "120"
+      DOCUMENTS_DIR: /app/documents
+      INFERENCE_BASE_URL: http://inference:8000/v1
+      INFERENCE_MODEL: language-model
+      INFERENCE_API_KEY: ${INFERENCE_API_KEY:?set in .env — run scripts/setup.sh}
+      INGEST_BATCH_SIZE: "10"
+      INGEST_BATCH_TIMEOUT_SECONDS: "600"
+      # Per-batch retry (app-level) handles transient timeouts/5xx from the
+      # api/inference services without restarting the whole ingest run.
+      INGEST_MAX_RETRIES: "3"
+      INGEST_RETRY_BACKOFF_SECONDS: "15"
+      RESET_COLLECTION: "false"
+      TARGET_LANGUAGE: en
+    depends_on:
+      api:
+        condition: service_healthy
+      inference:
+        condition: service_healthy
+    restart: on-failure:3
+    networks:
+      - wig-net
+
+networks:
+  wig-net:

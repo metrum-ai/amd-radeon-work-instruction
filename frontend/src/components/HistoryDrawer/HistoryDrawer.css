@@ -1,0 +1,126 @@
+/* Copyright Advanced Micro Devices, Inc.
+ *
+ * SPDX-License-Identifier: MIT
+ */
+.hp-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+}
+
+.hp {
+  position: fixed;
+  top: 52px;
+  right: 20px;
+  width: 380px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+  animation: hpDrop 0.15s ease;
+  overflow: hidden;
+}
+
+@keyframes hpDrop {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hp__header {
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.hp__title {
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.hp-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.12s;
+  border-bottom: 1px solid var(--border);
+}
+
+.hp-item:last-child {
+  border-bottom: none;
+}
+
+.hp-item--skeleton {
+  height: 52px;
+  cursor: default;
+  background: linear-gradient(90deg, var(--bg-elevated) 25%, var(--bg-hover) 50%, var(--bg-elevated) 75%);
+  background-size: 200% 100%;
+  animation: hp-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes hp-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.hp-empty {
+  padding: 24px 14px;
+  font-size: 11px;
+  color: var(--text-dim);
+  text-align: center;
+  letter-spacing: 0.06em;
+}
+
+.hp-item:hover {
+  background: var(--bg-hover);
+}
+
+.hp-item__left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.hp-item__title {
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hp-item__meta {
+  font-family: var(--font);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.hp-item__dot {
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+}
+
+.hp-item__icon {
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.2);
+  transition: color 0.12s;
+}
+
+.hp-item:hover .hp-item__icon {
+  color: rgba(255, 255, 255, 0.6);
+}
