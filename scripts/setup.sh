@@ -363,7 +363,7 @@ info "  docker compose logs -f inference llm-inference-1 lemonade-1"
 echo ""
 info "Once models are loaded the UI comes up and is fully usable. OEM reference-doc"
 info "ingestion then runs in the background (15-20 min); until it finishes the UI shows"
-info "an 'indexing' banner and generated instructions have limited OEM-manual context."
+info "generated instructions with limited OEM-manual context."
 info "  docker compose logs -f oem-ingest"
 
 echo ""

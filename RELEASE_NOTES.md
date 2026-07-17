@@ -5,6 +5,12 @@ SPDX-License-Identifier: MIT
 -->
 # Release Notes
 
+## v1.1
+
+### Updates
+
+* **Reliable Procedure Context Resolution**: Eliminated missing source citations in generated work instructions by configuring `PROCEDURE_CONTEXT_URL` to use the Docker Compose service endpoint, ensuring consistent retrieval of procedure context across containers and accurate citation generation.
+
 ## v1.0
 
 ### Features

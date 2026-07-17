@@ -131,7 +131,7 @@ services:
       - WIG_LEMONADE_PEERS=http://lemonade-1:13305,http://lemonade-2:13305
       - WIG_TEMPLATES_DIR=/app/work_instruction_generator/export/templates
       - WIG_ARTIFACT_PATH=/data/wig/artifacts
-      - PROCEDURE_CONTEXT_URL=http://manufacturing-work-instruction-generator-api-1:8080
+      - PROCEDURE_CONTEXT_URL=http://api:8080
       - SIMULATOR_URL=http://machine-simulator:8000
       - DATABASE_URL=${DATABASE_URL}
     volumes:
@@ -213,7 +213,7 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - MILVUS_URL=http://milvus-standalone:19530
       - SIMULATOR_URL=http://machine-simulator:8000
-      - PROCEDURE_CONTEXT_URL=http://manufacturing-work-instruction-generator-api-1:8080
+      - PROCEDURE_CONTEXT_URL=http://api:8080
     volumes:
       - wig-artifacts:/data/wig/artifacts
     healthcheck:
