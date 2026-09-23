@@ -82,7 +82,11 @@ async def _prewarm_flux(lemonade_url: str) -> None:
     urls = [u.strip() for u in peers_env.split(",") if u.strip()] or [
         lemonade_url
     ]
-    await asyncio.gather(*[_prewarm_one(u) for u in urls])
+    # Peers share one HF cache mount, so parallel first pulls write the same
+    # .partial file and fail content verification. Warm the first peer alone
+    # (it downloads), then the rest in parallel (they hit the cache and load).
+    await _prewarm_one(urls[0])
+    await asyncio.gather(*[_prewarm_one(u) for u in urls[1:]])
     _ready = True
 
 

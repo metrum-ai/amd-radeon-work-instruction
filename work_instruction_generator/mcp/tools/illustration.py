@@ -54,12 +54,21 @@ async def prewarm_flux() -> None:
     """Pre warm every Lemonade peer listed in WIG_LEMONADE_PEERS (comma-separated),
     falling back to WIG_LEMONADE_URL when no peers are configured. Mirrors the
     prewarm behavior the old agent_server.py ran on startup for this agent.
+
+    Set WIG_PREWARM_FLUX=0 to skip it when agent-illustration already
+    pre-warms the same peers — two pullers on one peer write the same
+    .partial file concurrently and corrupt it
     """
+    if os.environ.get("WIG_PREWARM_FLUX", "1").lower() in ("0", "false", "no"):
+        logger.info("Flux pre-warm disabled (WIG_PREWARM_FLUX=0)")
+        return
     peers_env = os.environ.get("WIG_LEMONADE_PEERS", "")
     urls = [u.strip() for u in peers_env.split(",") if u.strip()] or [
         _LEMONADE_URL
     ]
-    await asyncio.gather(*[_prewarm_one(u) for u in urls])
+    # Shared HF cache across peers: first peer downloads alone, rest then load.
+    await _prewarm_one(urls[0])
+    await asyncio.gather(*[_prewarm_one(u) for u in urls[1:]])
 
 
 def register(mcp) -> None:

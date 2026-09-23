@@ -5,6 +5,14 @@ SPDX-License-Identifier: MIT
 -->
 # Release Notes
 
+## v1.2
+
+### Updates
+
+* **Reliable First-Run Flux Model Download**: Eliminated corrupted and restarting Flux downloads by ensuring the model is downloaded only once and shared from cache across both Lemonade instances.
+
+* **No False Startup Failure on First Install**: Updated `setup.sh` to wait for model downloads to complete instead of reporting a startup failure when services are still loading on first run.
+
 ## v1.1
 
 ### Updates

@@ -41,6 +41,12 @@ RAM_MIN_GB=48
 MIN_REQUIRED_GPUS=4
 SETUP_DOCKER_RETRY_ATTEMPTS="${SETUP_DOCKER_RETRY_ATTEMPTS:-3}"
 SETUP_DOCKER_RETRY_DELAY_S="${SETUP_DOCKER_RETRY_DELAY_S:-20}"
+# First-run model downloads (~45 GB) can outlast the model servers' healthcheck
+# start_period, so setup waits for them instead of reporting a crash.
+# SETUP_WAIT_FOR_HEALTHY=0 skips the wait; SETUP_STARTUP_TIMEOUT_MIN caps it.
+SETUP_WAIT_FOR_HEALTHY="${SETUP_WAIT_FOR_HEALTHY:-1}"
+SETUP_STARTUP_TIMEOUT_MIN="${SETUP_STARTUP_TIMEOUT_MIN:-240}"
+SETUP_STARTUP_POLL_S="${SETUP_STARTUP_POLL_S:-30}"
 
 add_or_replace() {
     local key="$1" value="$2"
@@ -50,6 +56,55 @@ add_or_replace() {
         [ -s .env ] && printf '\n' >> .env
         printf '%s=%s\n' "$key" "$value" >> .env
     fi
+}
+
+# compose_state — one "service|state|health|exit_code" line per container.
+compose_state() {
+    docker compose ps -a --format '{{.Service}}|{{.State}}|{{.Health}}|{{.ExitCode}}' 2>/dev/null || true
+}
+
+# compose_crashed — services that actually failed: exited non-zero or dead.
+# One-shot jobs (model-downloader, oem-ingest) exit 0 and are not failures.
+compose_crashed() {
+    compose_state | awk -F'|' '($2 == "exited" && $4 != 0) || $2 == "dead" { print $1 }'
+}
+
+# compose_missing — services compose never created a container for (e.g. an
+# image pull failed). Waiting on healthchecks can't fix these.
+compose_missing() {
+    comm -23 <(docker compose config --services 2>/dev/null | sort) \
+             <(docker compose ps -a --services 2>/dev/null | sort)
+}
+
+# compose_pending — running containers whose healthcheck hasn't passed yet.
+# "unhealthy" counts as pending: a model server past its start_period while
+# its weights are still downloading is unhealthy but not broken.
+compose_pending() {
+    compose_state | awk -F'|' '$2 == "running" && ($3 == "starting" || $3 == "unhealthy") { print $1 }'
+}
+
+# wait_for_healthy — poll until nothing is pending, then re-run `compose up -d`
+# so dependents compose skipped with "dependency failed to start" (left in
+# "created", e.g. the lemonade LB) get started. Returns 1 on timeout, dies on
+# a real crash.
+wait_for_healthy() {
+    local deadline=$(( $(date +%s) + SETUP_STARTUP_TIMEOUT_MIN * 60 ))
+    local pending crashed
+    while true; do
+        crashed="$(compose_crashed)"
+        [ -n "$crashed" ] && die "Service(s) crashed: $(echo $crashed) — check: docker compose logs $(echo $crashed)"
+        pending="$(compose_pending)"
+        if [ -z "$pending" ]; then
+            info "All model servers healthy — starting remaining dependent services..."
+            docker compose up -d && return 0
+            crashed="$(compose_crashed)"
+            [ -n "$crashed" ] && die "Service(s) crashed: $(echo $crashed) — check: docker compose logs $(echo $crashed)"
+            # Something new went back to starting; keep waiting.
+        fi
+        [ "$(date +%s)" -ge "$deadline" ] && return 1
+        info "$(date +%H:%M) still downloading/loading: $(echo $pending)"
+        sleep "$SETUP_STARTUP_POLL_S"
+    done
 }
 
 # gen_token — emit a strong random secret (hex via openssl, base64 fallback).
@@ -349,17 +404,48 @@ if [ "$SKIP_ENV" -eq 0 ]; then
     done
 fi
 
-info "Starting services (model-downloader fetches Qwen3.5-9B ~19GB on first run)..."
+info "Starting services (first run downloads ~45 GB of model weights)..."
+STARTUP_PENDING=0
 if ! retry_command "Docker Compose startup" "$SETUP_DOCKER_RETRY_ATTEMPTS" "$SETUP_DOCKER_RETRY_DELAY_S" \
     docker compose up -d; then
-    die "Docker Compose startup failed — check output above."
+    # `compose up -d` blocks on `depends_on: service_healthy` and exits non-zero
+    # ("dependency failed to start") when a model server is still downloading
+    # past its start_period. Only a crashed or never-created container is fatal.
+    _crashed="$(compose_crashed)"
+    _missing="$(compose_missing)"
+    [ -n "$_crashed" ] && die "Service(s) crashed: $(echo $_crashed) — check: docker compose logs $(echo $_crashed)"
+    [ -n "$_missing" ] && die "Service(s) were never created: $(echo $_missing) — check output above."
+    [ -z "$(compose_pending)" ] && die "Docker Compose startup failed — check output above."
+    warn "Compose reported \"dependency failed to start\" — this is expected on first run"
+    warn "while model weights download. No service has crashed."
+    STARTUP_PENDING=1
 fi
-ok "Services started"
 echo ""
 
-info "vLLM (Qwen3.5-9B, Gemma-4-E2B-it) and Lemonade (Flux) can take 15-30 min to become"
-info "healthy on first run while models download and load onto GPU. Track progress with:"
+info "Qwen3.5-9B (~19 GB), Gemma-4-E2B-it (~10 GB) and Flux-2-Klein-4B (~15 GB) download on"
+info "first run: ~30 min on a fast link, several hours on a slow one. Later runs load from"
+info "cache in a few minutes. Track progress with:"
+info "  docker compose ps"
 info "  docker compose logs -f inference llm-inference-1 lemonade-1"
+echo ""
+
+if [ "$STARTUP_PENDING" -eq 1 ]; then
+    if [ "$SETUP_WAIT_FOR_HEALTHY" = "1" ]; then
+        info "Waiting for model servers (up to ${SETUP_STARTUP_TIMEOUT_MIN} min; Ctrl+C is safe —"
+        info "containers keep running, finish later with: docker compose up -d)..."
+        if wait_for_healthy; then
+            ok "Services started"
+        else
+            warn "Still loading after ${SETUP_STARTUP_TIMEOUT_MIN} min. Containers keep running;"
+            warn "once 'docker compose ps' shows them healthy, run: docker compose up -d"
+        fi
+    else
+        warn "Not waiting (SETUP_WAIT_FOR_HEALTHY=0). Once 'docker compose ps' shows the model"
+        warn "servers healthy, run 'docker compose up -d' to start the remaining services."
+    fi
+else
+    ok "Services started"
+fi
 echo ""
 info "Once models are loaded the UI comes up and is fully usable. OEM reference-doc"
 info "ingestion then runs in the background (15-20 min); until it finishes the UI shows"

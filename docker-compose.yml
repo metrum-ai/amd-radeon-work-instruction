@@ -129,6 +129,9 @@ services:
       - AGENT_TRANSLATE_MODEL=language-model
       - WIG_LEMONADE_URL=http://lemonade:13305
       - WIG_LEMONADE_PEERS=http://lemonade-1:13305,http://lemonade-2:13305
+      # agent-illustration owns the Flux pre-warm; a second puller on the same
+      # peers corrupts the shared download
+      - WIG_PREWARM_FLUX=0
       - WIG_TEMPLATES_DIR=/app/work_instruction_generator/export/templates
       - WIG_ARTIFACT_PATH=/data/wig/artifacts
       - PROCEDURE_CONTEXT_URL=http://api:8080

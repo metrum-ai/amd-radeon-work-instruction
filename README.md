@@ -125,7 +125,9 @@ Either path brings up:
 - **AI services**: Qwen3.5-9B (GPU 0), Gemma-4-E2B-it ×2 (GPU 1), Lemonade/Flux ×2 (GPU 2, GPU 3)
 - **Application**: machine simulator, ingest RAG service, `wig-mcp-tools`, OpenClaw gateway, WIG API, React frontend
 
-> **First boot** can take **15–30 minutes** while GPU images build and model weights download and load. Monitor with `docker compose ps` and `docker compose logs -f`.
+> **First boot** downloads ~45 GB of model weights (Qwen3.5-9B ~19 GB, Gemma-4-E2B-it ~10 GB, Flux-2-Klein-4B + text encoder/VAE ~15 GB). Expect **~30 minutes on a fast link and several hours on a slow one**; later bring-ups load from the host cache in a few minutes. Monitor with `docker compose ps` and `docker compose logs -f inference llm-inference-1 lemonade-1`.
+>
+> If a model server is still downloading when its healthcheck grace period ends, `docker compose up -d` exits with **`dependency failed to start: container … is unhealthy`**. This is expected on a first run and is **not a crash**. `setup.sh` detects it, waits for the model servers to become healthy, and then starts the remaining services. On the manual path, wait until `docker compose ps` shows the model servers healthy and run `docker compose up -d` again. See [Known Issues](#known-issues).
 >
 > **Every stack bring-up** takes a total of **15–20 minutes** while the ingest RAG service ingests all OEM manual/SOP documents into Milvus. Monitor with `docker compose logs -f oem-ingest`.
 
@@ -339,7 +341,16 @@ Full reference of every variable understood by the stack (see `.env.example`):
 
 ### Application
 
-- **First model load is slow.** Qwen3.5-9B, Gemma-4-E2B-it, and Flux/Lemonade all report unhealthy for several minutes on first boot while weights download and load onto GPU (vLLM start period ~20 minutes, Lemonade ~30 minutes).
+- **First model load is slow.** Qwen3.5-9B, Gemma-4-E2B-it, and Flux/Lemonade report `starting` (and, once their start period runs out, `unhealthy`) while ~45 GB of weights download and load onto GPU. On a slow link, Lemonade/Flux can take well over its 60-minute start period.
+- **`dependency failed to start` on first run is not a crash.** `docker compose up -d` waits for `service_healthy` dependencies and gives up when a model server is still downloading, leaving its dependents (e.g. `wig-lemonade-lb`) in `created`. Containers keep downloading in the background. `setup.sh` handles this automatically: it fails only if a container has actually exited with an error or was never created; otherwise it waits (default up to 240 minutes) and then runs `docker compose up -d` again. Tunables:
+
+  | Variable | Default | Effect |
+  | -------- | ------- | ------ |
+  | `SETUP_WAIT_FOR_HEALTHY` | `1` | `0` returns immediately instead of waiting; run `docker compose up -d` yourself once models are healthy |
+  | `SETUP_STARTUP_TIMEOUT_MIN` | `240` | Maximum minutes to wait for model servers before handing back with instructions |
+  | `SETUP_STARTUP_POLL_S` | `30` | Seconds between progress checks |
+
+  Pressing Ctrl+C during the wait is safe: containers keep running, and `docker compose up -d` finishes the bring-up later.
 - **Document ingestion is slow.** `oem-ingest` can take up to 15–20 minutes to ingest all OEM manual/SOP documents into Milvus on every stack bring-up. Monitor with `docker compose logs -f oem-ingest`.
 
 ---
